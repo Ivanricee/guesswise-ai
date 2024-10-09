@@ -1,3 +1,13 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"]
+  "extends": ["next/core-web-vitals", "next/typescript","prettier"],
+  "rules": {
+    "max-len": ["error", 140],
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "quotes": [2, "single", { "avoidEscape": true }]
+  }
 }
+/*{
+  "extends": "next","prettier" // for customizing eslint rules
+}*/
