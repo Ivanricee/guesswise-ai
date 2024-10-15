@@ -21,7 +21,7 @@
       "@/*": ["./src/*"],
       "@/components/*":["./src/components/*"],
       "@/lib/*":["./src/lib/*"],
-      "@/store/*":["./src/styles/*"],
+      "@/store/*":["./src/store/*"],
       "@/utils/*":["./src/utils/*"],
       "/@/types/*":["./src/types/*"]
     }
