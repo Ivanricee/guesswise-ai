@@ -16,13 +16,15 @@ import { testImages } from '@/lib/testImage'
 import { useSearchParams } from 'next/navigation'
 import { Player, useAppStore } from '@/store/zustand-store'
 import { useState } from 'react'
+import { usePlayerLimit } from './hooks/usePlayerLimit'
 
 export default function NewPlayer() {
   const searchParams = useSearchParams()
   const inviteToken = searchParams.get('invitation')
-
+  const { isInlimit } = usePlayerLimit({ token: inviteToken ?? null })
   const { setPlayer } = useAppStore()
   const [playerError, setPlayerError] = useState<null | string>(null)
+  const [validTags, setValidTags] = useState<boolean | null>()
   const form = useForm<z.infer<typeof newPlayerSchema>>({
     resolver: zodResolver(newPlayerSchema),
     defaultValues: {
@@ -54,28 +56,32 @@ export default function NewPlayer() {
       playerData.append('token', '')
     }
     //player creation
-    const { error, isValidToken, imageUrl, uriToken } = await createPlayer(playerData)
+    const { error, isValidToken, imageUrl, uriToken, tags, areValidTags } =
+      await createPlayer(playerData)
     const player: Player = {
       name: data.name,
       imageUrl: imageUrl || '',
+      tags: tags || [],
       isHost: !hasInvitation,
       isGuessing: false,
       isCurrent: true,
     }
-    //handle response error
+    //handle min Tags
+    if (areValidTags === false) {
+      form.setValue('image', null)
+      form.setValue('optionalImg', [])
+      setValidTags(false)
+    }
+
+    //handle error
     if (error && error.length > 0)
       setPlayerError(
         `"${error}" Fallo al crear el jugador, intentalo de nuevo refrescando la página.`
       )
-    //handle invitation player
-    if (isValidToken && inviteToken) {
-      //store current player
-      setPlayer({ player, token: null })
-    }
-    //handle host player
-    if (uriToken && uriToken.length > 0) {
-      setPlayer({ player, token: uriToken })
-    }
+    //invitation player
+    if (isValidToken && inviteToken) setPlayer({ player, token: null })
+    //host player
+    if (uriToken && uriToken.length > 0) setPlayer({ player, token: uriToken })
   }
 
   const onDropChange = (onChange: any, file: any) => {
@@ -89,9 +95,22 @@ export default function NewPlayer() {
       ? field.onChange([item.asset_id]) // Si se selecciona, se establece el valor como item.id
       : field.onChange([]) // Si se deselecciona, se establece como null
   }
+
+  if (playerError) {
+    return (
+      <section>
+        <h2>{playerError}</h2>
+      </section>
+    )
+  }
+  //if (isInlimit === true) {
   return (
     <section>
-      <h2>{playerError}</h2>
+      {validTags === false && (
+        <div>
+          <h2>La imagen no es la adecuada, elige otra con mas objetos</h2>
+        </div>
+      )}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmitPlayer)}>
           <FormField
@@ -186,4 +205,12 @@ export default function NewPlayer() {
       </Form>
     </section>
   )
+  // }
+  if (isInlimit === false) {
+    return (
+      <section>
+        <h1>Esta sala esta llena</h1>
+      </section>
+    )
+  }
 }
