@@ -21,7 +21,6 @@ export default function RoomPlayer() {
         }
       } catch (error) {
         console.error('Error al obtener la sala:', error)
-        // Maneja el error según sea necesario
       }
     }
 
