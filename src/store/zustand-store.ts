@@ -3,6 +3,7 @@ import { create } from 'zustand'
 export type Player = {
   name: string
   imageUrl: string
+  tags: string[]
   isHost: boolean
   isGuessing: boolean
   isCurrent: boolean
