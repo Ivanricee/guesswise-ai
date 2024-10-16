@@ -11,7 +11,6 @@ export default function ShareToken({ token }: { token: string | null }) {
   const handleClick = async () => {
     await copyToClipboard(invitationUrl)
   }
-  console.log('CopyToken component:', { token })
 
   return (
     <section className="flex bg-stone-950/20 ">
