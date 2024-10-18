@@ -1,7 +1,6 @@
 'use client'
 import { useAppStore } from '@/store/zustand-store'
 import PlayerBoard from './PlayerBoard'
-import ShareToken from './ShareToken'
 import { useSearchParams } from 'next/navigation'
 import { getRoomFromToken } from '@/app/actions/token'
 import { useEffect, useState } from 'react'
@@ -27,10 +26,5 @@ export default function RoomPlayer() {
     getRoom()
   }, [validToken])
 
-  return (
-    <section>
-      {room && validToken && <PlayerBoard room={room} />}
-      {token && <ShareToken token={token} />}
-    </section>
-  )
+  return <section>{room && validToken && <PlayerBoard room={room} />}</section>
 }
