@@ -4,6 +4,8 @@ export interface UserPresence {
   image: string
   user: string
   tags: string[]
+  isGuessing: boolean
+  date: number
 }
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
