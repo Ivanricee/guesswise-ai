@@ -17,12 +17,13 @@ import { useSearchParams } from 'next/navigation'
 import { Player, useAppStore } from '@/store/zustand-store'
 import { useState } from 'react'
 import { usePlayerLimit } from './hooks/usePlayerLimit'
+import ShareToken from './ShareToken'
 
 export default function NewPlayer() {
   const searchParams = useSearchParams()
   const inviteToken = searchParams.get('invitation')
   const { isInlimit } = usePlayerLimit({ token: inviteToken ?? null })
-  const { setPlayer } = useAppStore()
+  const { setPlayer, token } = useAppStore()
   const [playerError, setPlayerError] = useState<null | string>(null)
   const [validTags, setValidTags] = useState<boolean | null>()
   const form = useForm<z.infer<typeof newPlayerSchema>>({
@@ -59,11 +60,12 @@ export default function NewPlayer() {
     const { error, isValidToken, imageUrl, uriToken, tags, areValidTags } =
       await createPlayer(playerData)
     const player: Player = {
+      date: Date.now(),
       name: data.name,
       imageUrl: imageUrl || '',
       tags: tags || [],
       isHost: !hasInvitation,
-      isGuessing: false,
+      isGuessing: true,
       isCurrent: true,
     }
     //handle min Tags
@@ -95,7 +97,7 @@ export default function NewPlayer() {
       ? field.onChange([item.asset_id]) // Si se selecciona, se establece el valor como item.id
       : field.onChange([]) // Si se deselecciona, se establece como null
   }
-
+  const uriToken = inviteToken ? `?invitation=${inviteToken}` : ''
   if (playerError) {
     return (
       <section>
@@ -103,109 +105,115 @@ export default function NewPlayer() {
       </section>
     )
   }
-  //if (isInlimit === true) {
-  return (
-    <section>
-      {validTags === false && (
-        <div>
-          <h2>La imagen no es la adecuada, elige otra con mas objetos</h2>
-        </div>
-      )}
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmitPlayer)}>
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nombre</FormLabel>
-                <FormControl>
-                  <Input placeholder="ivanrice" {...field} maxLength={20} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="image"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <FormItem>
-                <FormLabel>Upload an Image</FormLabel>
-                <FormControl>
-                  <section>
-                    <Dropzone onDrop={(file) => onDropChange(onChange, file)} maxFiles={1}>
-                      {({ getRootProps, getInputProps }) => (
-                        <div {...getRootProps()} className="border-2 border-primary p-6">
-                          <Input {...getInputProps()} onBlur={onBlur} />
-                          <p>Arrastra tu foto aquí o haz click para subirla</p>
-                          {value &&
-                            value.map((file: DropzoneRootProps) => (
-                              <div key={file.path}>
-                                {file.path}{' '}
-                                <Image
-                                  src={`${URL.createObjectURL(file as File)}`}
-                                  alt=""
-                                  width={100}
-                                  height={100}
-                                />
-                              </div>
-                            ))}
-                        </div>
-                      )}
-                    </Dropzone>
-                  </section>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="optionalImg"
-            render={() => (
-              <div className="flex  p-2">
-                {testImages.map((item) => (
-                  <FormField
-                    key={item.asset_id}
-                    control={form.control}
-                    name="optionalImg"
-                    render={({ field }) => {
-                      return (
-                        <FormItem
-                          key={item.asset_id}
-                          className="flex flex-row items-start space-x-3 space-y-0"
-                        >
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value?.includes(item.asset_id)}
-                              onCheckedChange={(checked) => onImageChange(checked, field, item)}
-                            />
-                          </FormControl>
-                          <FormLabel className="text-sm font-normal">
-                            <div>
-                              <Image src={item.url} alt="" width={100} height={100} />
+  if (isInlimit === true) {
+    return (
+      <>
+        <section>
+          {validTags === false && (
+            <div>
+              <h2>La imagen no es la adecuada, elige otra con mas objetos</h2>
+            </div>
+          )}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmitPlayer)}>
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nombre</FormLabel>
+                    <FormControl>
+                      <Input placeholder="ivanrice" {...field} maxLength={20} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="image"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <FormItem>
+                    <FormLabel>Upload an Image</FormLabel>
+                    <FormControl>
+                      <section>
+                        <Dropzone onDrop={(file) => onDropChange(onChange, file)} maxFiles={1}>
+                          {({ getRootProps, getInputProps }) => (
+                            <div {...getRootProps()} className="border-2 border-primary p-6">
+                              <Input {...getInputProps()} onBlur={onBlur} />
+                              <p>Arrastra tu foto aquí o haz click para subirla</p>
+                              {value &&
+                                value.map((file: DropzoneRootProps) => (
+                                  <div key={file.path}>
+                                    {file.path}{' '}
+                                    <Image
+                                      src={`${URL.createObjectURL(file as File)}`}
+                                      alt=""
+                                      width={100}
+                                      height={100}
+                                    />
+                                  </div>
+                                ))}
                             </div>
-                          </FormLabel>
-                        </FormItem>
-                      )
-                    }}
-                  />
-                ))}
-                <FormMessage />
+                          )}
+                        </Dropzone>
+                      </section>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="optionalImg"
+                render={() => (
+                  <div className="flex  p-2">
+                    {testImages.map((item) => (
+                      <FormField
+                        key={item.asset_id}
+                        control={form.control}
+                        name="optionalImg"
+                        render={({ field }) => {
+                          return (
+                            <FormItem
+                              key={item.asset_id}
+                              className="flex flex-row items-start space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(item.asset_id)}
+                                  onCheckedChange={(checked) => onImageChange(checked, field, item)}
+                                />
+                              </FormControl>
+                              <FormLabel className="text-sm font-normal">
+                                <div>
+                                  <Image src={item.url} alt="" width={100} height={100} />
+                                </div>
+                              </FormLabel>
+                            </FormItem>
+                          )
+                        }}
+                      />
+                    ))}
+                    <FormMessage />
+                  </div>
+                )}
+              />
+              <div className="flex items-center justify-center">
+                <Button
+                  type="submit"
+                  disabled={!form.formState.isValid || form.formState.isValidating}
+                >
+                  Submit
+                </Button>
               </div>
-            )}
-          />
-          <div className="flex items-center justify-center">
-            <Button type="submit" disabled={!form.formState.isValid || form.formState.isValidating}>
-              Submit
-            </Button>
-          </div>
-        </form>
-      </Form>
-    </section>
-  )
-  // }
+            </form>
+          </Form>
+        </section>
+        <section>{token && <ShareToken token={token} />}</section>
+      </>
+    )
+  }
   if (isInlimit === false) {
     return (
       <section>
