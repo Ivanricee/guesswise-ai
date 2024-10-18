@@ -2,10 +2,24 @@
 
 import Image from 'next/image'
 import { usePresence } from './hooks/usePresence'
+import { useSTartGame } from './hooks/useStartGame'
+import { Button } from './ui/button'
+import { useAppStore } from '@/store/zustand-store'
 
 export default function PlayerBoard({ room }: { room: string }) {
-  const { players } = usePresence({ room })
-
+  const { updatePlayer } = useAppStore()
+  const { players, completeRoundCurrentPlayer } = usePresence({ room })
+  const { startNewRound, currentRound } = useSTartGame()
+  const completeRound = () => {
+    console.log({ currentRound })
+    if (players) {
+      const currentPlayer = players.find((player) => player.isCurrent)
+      if (currentPlayer) {
+        updatePlayer({ imageUrl: currentPlayer?.imageUrl, name: currentPlayer?.name })
+        completeRoundCurrentPlayer(currentPlayer)
+      }
+    }
+  }
   return (
     <section>
       <h2>Players</h2>
@@ -24,10 +38,12 @@ export default function PlayerBoard({ room }: { room: string }) {
                   width={150}
                   height={150}
                 />
+                <p>{player.isGuessing ? 'Guessing' : 'Not Guessing'}</p>
               </div>
             )
           })}
       </div>
+      <Button onClick={completeRound}>Completar!</Button>
     </section>
   )
 }
