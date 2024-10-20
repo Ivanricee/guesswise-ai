@@ -1,12 +1,13 @@
 'use client'
 import { useAppStore } from '@/store/zustand-store'
-import PlayerBoard from './PlayerBoard'
+
 import { useSearchParams } from 'next/navigation'
 import { getRoomFromToken } from '@/app/actions/token'
 import { useEffect, useState } from 'react'
+import GameRoom from './GameRoom'
 
 export default function RoomPlayer() {
-  const { token } = useAppStore()
+  const { token, isInlimit } = useAppStore()
   const searchParams = useSearchParams()
   const [room, setRoom] = useState<string | null>(null)
   const inviteToken = searchParams.get('invitation')
@@ -26,5 +27,9 @@ export default function RoomPlayer() {
     getRoom()
   }, [validToken])
 
-  return <section>{room && validToken && <PlayerBoard room={room} />}</section>
+  return (
+    <section>
+      {room && validToken && isInlimit === true && <GameRoom room={room} isHost={!inviteToken} />}
+    </section>
+  )
 }
