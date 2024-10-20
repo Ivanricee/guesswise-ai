@@ -1,22 +1,12 @@
 import NewPlayer from '@/components/NewPlayer'
-import RoomPlayer from '@/components/RoomPlayer'
+import { Suspense } from 'react'
 
 export default function Home() {
   return (
-    <main className="">
-      <section>
-        <h2>Instructions</h2>
-      </section>
-      <section>
-        <h2>Register</h2>
-        {
-          //imagen
-          //nombre
-          //token
-        }
+    <section className="">
+      <Suspense>
         <NewPlayer />
-        <RoomPlayer />
-      </section>
-    </main>
+      </Suspense>
+    </section>
   )
 }
