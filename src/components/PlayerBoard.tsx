@@ -1,29 +1,28 @@
-'use client'
-
+import { Player } from '@/store/zustand-store'
 import Image from 'next/image'
-import { usePresence } from './hooks/usePresence'
-import { useSTartGame } from './hooks/useStartGame'
+import { RoundPlayer } from './hooks/useStartGame'
 import { Button } from './ui/button'
-import { useAppStore } from '@/store/zustand-store'
 
-export default function PlayerBoard({ room }: { room: string }) {
-  const { updatePlayer } = useAppStore()
-  const { players, completeRoundCurrentPlayer } = usePresence({ room })
-  const { startNewRound, currentRound } = useSTartGame()
-  const completeRound = () => {
-    console.log({ currentRound })
-    if (players) {
-      const currentPlayer = players.find((player) => player.isCurrent)
-      if (currentPlayer) {
-        updatePlayer({ imageUrl: currentPlayer?.imageUrl, name: currentPlayer?.name })
-        completeRoundCurrentPlayer(currentPlayer)
-      }
-    }
+interface PlayerBoardProps {
+  players: Player[] | null
+  currentRound: RoundPlayer[] | null
+  isHost: boolean
+  broadcastStartGame: () => void
+}
+
+export default function PlayerBoard({
+  players,
+  currentRound,
+  isHost,
+  broadcastStartGame,
+}: PlayerBoardProps) {
+  const onStartGame = async () => {
+    await broadcastStartGame()
   }
   return (
-    <section>
-      <h2>Players</h2>
-      <div className="flex justify-center gap-3 bg-orange-600 p-2">
+    <>
+      <h1 className="p-4 text-center text-2xl font-bold uppercase">Jugadores</h1>
+      <div className="flex flex-wrap justify-center gap-3 ">
         {players &&
           players.map((player) => {
             return (
@@ -42,8 +41,30 @@ export default function PlayerBoard({ room }: { room: string }) {
               </div>
             )
           })}
+        {!currentRound && players && isHost && (
+          <div className="flex w-full flex-col items-center justify-center">
+            <div>
+              {players && players.length === 1 && (
+                <h2>
+                  ¡Listo para jugar! Puedes empezar solo o esperar a más jugadores (máximo 5).
+                </h2>
+              )}
+              {players && players.length > 1 && (
+                <h2>
+                  {`¡Hay ${players.length} jugadores! Puedes empezar ahora o esperar hasta 5 jugadores.`}
+                </h2>
+              )}
+              {players && players.length === 5 && (
+                <h2>
+                  ¡Genial! Ya hay 5 jugadores. ¡Estás listo para iniciar la partida cuando quieras!
+                </h2>
+              )}
+            </div>
+
+            <Button onClick={onStartGame}>Comenzar juego</Button>
+          </div>
+        )}
       </div>
-      <Button onClick={completeRound}>Completar!</Button>
-    </section>
+    </>
   )
 }
