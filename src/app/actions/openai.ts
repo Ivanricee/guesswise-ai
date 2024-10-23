@@ -19,6 +19,7 @@ export async function replaceImage(formData: FormData): Promise<replaceImageRes>
   const description = formData.get('description') as string
   const openAiKey = formData.get('openAiKey') as string
   const imageMaks = formData.get('imageMaks') as File
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const imageMaksText = formData.get('imageMaksText') as File
   const image = formData.get('image') as string
 
@@ -44,12 +45,15 @@ export async function replaceImage(formData: FormData): Promise<replaceImageRes>
   })
 
   //validate replace input
-  //const { replacedImgUrl, error } = await dalleEditImage(imageMaks, image, description, openai)
-  return {
+  const { replacedImgUrl, error } = await dalleEditImage(imageMaks, image, description, openai)
+  /*return {
     replacedImgUrl:
-      'https://oaidalleapiprodscus.blob.core.windows.net/private/org-O8kAuShP2s8BXrDJJb0Ye51q/user-XHFsUE9mN3DLUCYoZdLpyWvm/img-cqEM9F2Ud1fxowZpvMzoc3cO.png?st=2024-10-22T20%3A07%3A12Z&se=2024-10-22T22%3A07%3A12Z&sp=r&sv=2024-08-04&sr=b&rscd=inline&rsct=image/png&skoid=d505667d-d6c1-4a0a-bac7-5c84a87759f8&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2024-10-21T21%3A49%3A04Z&ske=2024-10-22T21%3A49%3A04Z&sks=b&skv=2024-08-04&sig=enob%2BhvT2jA3iaAspwfZnaAvn/SKaCRmOUxCtvQMTjU%3D',
+      'https://oaidalleapiprodscus.blob.core.windows.net/private/org-O8kAuShP2s8BXrDJJb0Ye51q/user-XHFsUE9mN3DLUCYoZdLpyWvm/img
+      -cqEM9F2Ud1fxowZpvMzoc3cO.png?st=2024-10-22T20%3A07%3A12Z&se=2024-10-22T22%3A07%3A12Z&sp=r&sv=2024-08-04&sr=b&rscd=inline&r
+      sct=image/png&skoid=d505667d-d6c1-4a0a-bac7-5c84a87759f8&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2024-10-21T21%3A49%3A
+      04Z&ske=2024-10-22T21%3A49%3A04Z&sks=b&skv=2024-08-04&sig=enob%2BhvT2jA3iaAspwfZnaAvn/SKaCRmOUxCtvQMTjU%3D',
     error: null,
-  }
+  }*/
 
   return { replacedImgUrl, error: error ?? null }
 }
