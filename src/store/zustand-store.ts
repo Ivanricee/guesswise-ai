@@ -1,5 +1,20 @@
 import { create } from 'zustand'
-
+export type BGuessWord = {
+  wordToGuess: string
+  isValidPlayerGuess: boolean | null
+  name: string
+  imageUrl: string
+}
+export type RoundSteps = {
+  characterGuess: string | null // el caracter a crear  es de halloween
+  isValidPlayerGuess: boolean | null // after 2nd round (true or false
+  replacedImgUrl: string | null
+}
+export const RoundStepsInitState = {
+  characterGuess: null,
+  isValidPlayerGuess: null,
+  replacedImgUrl: null,
+}
 export type Player = {
   date: number
   name: string
@@ -8,13 +23,14 @@ export type Player = {
   isHost: boolean
   isGuessing: boolean
   isCurrent: boolean
-  wordToGuess: string
+  wordToGuess: string | null
   score: number
 }
 interface State {
   players: Player[] | null
   token: string | null
   gameStarted: boolean
+  roundSteps: RoundSteps
   maxCountPlayers: number
   openAiKey: string | null
   isInlimit: boolean | null
@@ -33,10 +49,12 @@ interface Actions {
     isGuessing: boolean
   }) => void
   updatePlayers: () => void
+  updateGuessWordPlayers: ({ imageUrl, name, wordToGuess, isValidPlayerGuess }: BGuessWord) => void
   setGameStarted: (gameStarted: boolean, maxCountPlayers: number) => void
   setOpenAiKey: (openAiKey: string | null) => void
   setMaxCountPlayers: (maxCountPlayers: number) => void
   setIsInlimit: (isInlimit: boolean | null) => void
+  setRoundSteps: (roundSteps: RoundSteps) => void
 }
 
 export const useAppStore = create<State & Actions>((set) => ({
@@ -46,6 +64,8 @@ export const useAppStore = create<State & Actions>((set) => ({
   maxCountPlayers: 0,
   openAiKey: null,
   isInlimit: null,
+  roundSteps: RoundStepsInitState,
+  setRoundSteps: (roundSteps: RoundSteps) => set(() => ({ roundSteps: { ...roundSteps } })),
   setIsInlimit: (isInlimit: boolean | null) => set(() => ({ isInlimit: isInlimit })),
   setPlayer: ({ player, token }: { player: Player; token: string | null }) =>
     set((prevState) => {
@@ -93,6 +113,22 @@ export const useAppStore = create<State & Actions>((set) => ({
     set((prevState) => {
       const updatedPlayers = prevState.players?.map((player) => ({ ...player, isGuessing: true }))
       return { players: updatedPlayers }
+    }),
+  updateGuessWordPlayers: ({ imageUrl, name, wordToGuess, isValidPlayerGuess }: BGuessWord) =>
+    set((prevState) => {
+      if (prevState.players) {
+        const updatedPlayers = prevState.players.map((player) => {
+          if (`${player.imageUrl}${player.name}` === `${imageUrl}${name}`) {
+            if (isValidPlayerGuess === true) {
+              return { ...player, wordToGuess, score: player.score + 1 }
+            }
+            return { ...player, wordToGuess }
+          }
+          return player
+        })
+        return { players: updatedPlayers }
+      }
+      return { players: [] }
     }),
   setGameStarted: (gameStarted: boolean, maxCountPlayers: number) =>
     set(() => ({
