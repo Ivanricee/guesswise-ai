@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabaseClient, UserPresence } from '@/lib/supabase'
-import { Player, useAppStore } from '@/store/zustand-store'
+import { BGuessWord, Player, useAppStore } from '@/store/zustand-store'
 import { RealtimeChannel } from '@supabase/supabase-js'
 import { useEffect, useRef } from 'react'
 
@@ -18,6 +18,7 @@ export const usePresence = ({ room, startNewRound }: UsePresence) => {
     gameStarted,
     setMaxCountPlayers,
     setIsInlimit,
+    updateGuessWordPlayers,
   } = useAppStore()
 
   const playersRef = useRef<Player[] | null>([])
@@ -91,6 +92,16 @@ export const usePresence = ({ room, startNewRound }: UsePresence) => {
             if (result.payload.endGame) setMaxCountPlayers(0)
           }
         })
+        .on('broadcast', { event: 'set-score-guess-word' }, (result) => {
+          console.log('is end game', result.payload.guessWord)
+          const imageUrl = result.payload.imageUrl
+          const name = result.payload.name
+          const wordToGuess = result.payload.wordToGuess
+          const isValidPlayerGuess = result.payload.isValidPlayerGuess
+
+          updateGuessWordPlayers({ imageUrl, name, wordToGuess, isValidPlayerGuess })
+          if (result.payload.endGame) setMaxCountPlayers(0)
+        })
         .subscribe(async (status) => {
           if (status === 'SUBSCRIBED' && playersRef.current) {
             if (countPlayers.current > maxPlayers) {
@@ -132,6 +143,26 @@ export const usePresence = ({ room, startNewRound }: UsePresence) => {
       //console.log('guessin to false ', { presenceTrackStatus, playerToUpdate })
     }
   }
+
+  const broadcastGuessWord = async ({
+    wordToGuess,
+    isValidPlayerGuess,
+    name,
+    imageUrl,
+  }: BGuessWord) => {
+    if (roomPlayersRef.current) {
+      const broadcastResp = await roomPlayersRef.current.send({
+        type: 'broadcast',
+        event: 'set-score-guess-word',
+        payload: { wordToGuess: wordToGuess, name: name, imageUrl: imageUrl, isValidPlayerGuess },
+      })
+      if (broadcastResp === 'ok') {
+        // edit in players imageUrlEdited.
+        //current player
+        updateGuessWordPlayers({ imageUrl, name, wordToGuess, isValidPlayerGuess })
+      }
+    }
+  }
   const completeRound = async ({ endGame }: { endGame?: boolean }) => {
     if (roomPlayersRef.current) {
       const broadcastResp = await roomPlayersRef.current.send({
@@ -166,5 +197,11 @@ export const usePresence = ({ room, startNewRound }: UsePresence) => {
       //console.log('serverResponse', serverResponse)
     }
   }
-  return { players, completeTurnCurrentPlayer, completeRound, broadcastStartGame }
+  return {
+    players,
+    completeTurnCurrentPlayer,
+    completeRound,
+    broadcastStartGame,
+    broadcastGuessWord,
+  }
 }
