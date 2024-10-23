@@ -3,6 +3,7 @@ import localFont from 'next/font/local'
 import './globals.css'
 import { Suspense } from 'react'
 import RoomPlayer from '@/components/RoomPlayer'
+import { ThemeProvider } from '@/components/theme-provider'
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -27,13 +28,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning={true}>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <main className="">
-          {children}
-          <Suspense>
-            <RoomPlayer />
-          </Suspense>
-        </main>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning={true}
+      >
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+          <main className="h-dvh ">
+            {children}
+            <Suspense>
+              <RoomPlayer />
+            </Suspense>
+          </main>
+        </ThemeProvider>
       </body>
     </html>
   )
