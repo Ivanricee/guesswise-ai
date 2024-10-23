@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { RoundPlayer } from './hooks/useStartGame'
 import { Button } from './ui/button'
+import { useAppStore } from '@/store/zustand-store'
+import GameRound from './GameRound'
 
 interface RoundProps {
   round: RoundPlayer[] | null
@@ -16,21 +18,40 @@ export default function Round({
   roundNumber,
   isHost,
 }: RoundProps) {
-  const [showComplete, setShowComplete] = useState(true)
+  const [showRoundSteps, setShowRoundSteps] = useState(true)
+  const [showComplete, setShowComplete] = useState(false)
+  const { roundSteps } = useAppStore()
   //const [roundPlayers, setRoundPlayers] = useState<RoundPlayer[] | null>(null)
   //no mostrar completar si no se han validado las acciones del round
+  const { characterGuess, isValidPlayerGuess, replacedImgUrl } = roundSteps
 
   useEffect(() => {
-    if (round && !showComplete) {
-      setShowComplete(true)
+    if (round && !showRoundSteps) {
+      setShowRoundSteps(true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [round])
+  useEffect(() => {
+    const isFirstRound = roundNumber === 1
+    let areValidSteps = false
+    if (isFirstRound) {
+      areValidSteps =
+        Boolean(characterGuess) && isValidPlayerGuess === null && Boolean(replacedImgUrl)
+    } else {
+      areValidSteps =
+        Boolean(characterGuess) && isValidPlayerGuess !== null && Boolean(replacedImgUrl)
+    }
+    if (areValidSteps) {
+      setShowComplete(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roundSteps])
   const onCompleteTurn = () => {
     completeTurn()
+    setShowRoundSteps(true)
     setShowComplete(false)
   }
-
+  //round 0 ultimo roundterminado
   if (countRound === 0)
     return (
       <>
@@ -54,10 +75,15 @@ export default function Round({
     <>
       {round ? (
         <>
-          {showComplete ? (
+          {showRoundSteps ? (
             <>
               <div>Round {roundNumber}</div>
-              <Button onClick={onCompleteTurn}>Completar!</Button>
+              <GameRound
+                isFirstRound={roundNumber === 1}
+                imageUrl={round[0].evaluated.imageUrl}
+                toGuessPlayerWord={round[0].evaluated.wordToGuess}
+              />
+              {showComplete && <Button onClick={onCompleteTurn}>Completar!</Button>}
             </>
           ) : (
             <>
