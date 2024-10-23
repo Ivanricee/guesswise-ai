@@ -31,15 +31,12 @@ export default function GameRoom({ room, isHost }: { room: string; isHost: boole
       }
     }
   }
-  console.log({ countRound: countRound })
   useEffect(() => {
     if (players && !endRound) {
       const isGuessing = players.some((player) => {
         return player.isGuessing === true
       })
       if (!isGuessing) {
-        console.log('todos terminaron su turno')
-
         setEndRound(true)
         setCountRound((state) => state - 1)
       }
@@ -47,8 +44,6 @@ export default function GameRoom({ room, isHost }: { room: string; isHost: boole
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [players])
   useEffect(() => {
-    console.log('entro aqui?')
-
     setCountRound(maxCountPlayers - 1)
   }, [maxCountPlayers])
   const onEndRound = async ({ endGame }: { endGame?: boolean }) => {
